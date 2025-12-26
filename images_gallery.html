@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖼️ Images Gallery - EVI SCAN</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="manifest" href="/static/site.webmanifest">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #00d4ff 0%, #3b82f6 25%, #8b5cf6 75%, #ec4899 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --border-radius: 16px;
+            --shadow: 0 20px 40px rgba(0,0,0,0.1);
+            --shadow-hover: 0 30px 60px rgba(0,0,0,0.15);
+        }
+
+        /* Dark Mode Variables (Default) - Matching React UI */
+        [data-theme="dark"] {
+            --dark-bg: #020617;
+            --card-bg: #0f172a;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-color: #3b82f6;
+            --input-bg: rgba(15, 23, 42, 0.8);
+            --input-border: rgba(51, 65, 85, 0.5);
+            --nav-bg: rgba(15, 23, 42, 0.95);
+            --nav-border: rgba(51, 65, 85, 0.5);
+            --status-bg: rgba(59, 130, 246, 0.1);
+            --file-bg: rgba(15, 23, 42, 0.8);
+            --upload-bg: rgba(15, 23, 42, 0.5);
+            --upload-border: rgba(51, 65, 85, 0.5);
+            --result-bg: rgba(15, 23, 42, 0.8);
+            --result-border: rgba(51, 65, 85, 0.5);
+        }
+
+        /* Light Mode Variables - Soft, elevated look */
+        [data-theme="light"] {
+            --dark-bg: #f3f4f7;
+            --card-bg: #ffffff;
+            --result-bg: #ffffff;
+            --result-border: rgba(148, 163, 184, 0.35);
+            --file-bg: #f9fafb;
+            --upload-bg: #f3f4ff;
+            --upload-border: rgba(129, 140, 248, 0.45);
+            --status-bg: rgba(129, 140, 248, 0.10);
+            --text-primary: #0f172a;
+            --text-secondary: #6b7280;
+            --accent-color: #6366f1;
+            --input-bg: rgba(255, 255, 255, 0.95);
+            --input-border: rgba(148, 163, 184, 0.6);
+            --nav-bg: rgba(255, 255, 255, 0.96);
+            --nav-border: rgba(203, 213, 225, 0.9);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Global Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--input-bg);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.5);
+            border-radius: 4px;
+            transition: background 0.2s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.8);
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(59, 130, 246, 0.5) var(--input-bg);
+        }
+
+        /* Animated Background - Removed black background */
+        .bg-animated {
+            display: none;
+        }
+
+        /* Header - Matching React UI */
+        .main-header {
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--nav-border);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            height: 64px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--accent-color);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .logo:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .logo i {
+            font-size: 1.75rem;
+            color: var(--accent-color);
+            filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover i {
+            filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.5));
+        }
+
+        .logo span {
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .header-btn:hover {
+            background: var(--status-bg);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--status-bg);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .main-container {
+            padding: 2rem 1rem;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 640px) {
+            .main-container {
+                padding: 2rem 1.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .main-container {
+                padding: 2rem 2rem;
+            }
+        }
+
+        .page-header {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--result-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .images-count-badge {
+            background: var(--accent-color);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .header-actions-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .detect-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.5rem;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .detect-btn:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .detect-btn:active {
+            transform: translateY(0);
+        }
+
+        .detect-btn i {
+            font-size: 0.9rem;
+        }
+
+        .images-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .image-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--result-border);
+            overflow: hidden;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-color);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .image-name {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .loading-state, .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .loading-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: spin 1s linear infinite;
+            color: var(--accent-color);
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+            color: var(--text-secondary);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <!-- Header - Matching React UI -->
+    <header class="main-header">
+        <div class="header-content">
+            <!-- Left Side - Logo -->
+            <a href="/evi-scan" class="logo">
+                <i class="fas fa-fingerprint"></i>
+                <span>EVI SCAN</span>
+            </a>
+
+            <!-- Right Side - Back Button -->
+            <div class="header-actions">
+                <a href="javascript:history.back()" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-images"></i> Images Gallery
+            </h1>
+            <div class="header-actions-group">
+                <div class="images-count-badge" id="imagesCountBadge">
+                    <span id="imagesCountText">0 images</span>
+                </div>
+                <button class="detect-btn" id="detectBtn" onclick="detectImages()">
+                    <i class="fas fa-search"></i>
+                    Detect
+                </button>
+            </div>
+        </div>
+
+        <!-- Images Gallery -->
+        <div id="imagesGallery" class="images-gallery" style="display: none;">
+            <!-- Images will be loaded here -->
+        </div>
+
+        <!-- Loading State -->
+        <div id="imagesLoading" class="loading-state">
+            <i class="fas fa-spinner"></i>
+            <p>Loading images...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="imagesEmpty" class="empty-state" style="display: none;">
+            <i class="fas fa-image"></i>
+            <p>No images found. Upload a ZIP UFDR file with images to view them here.</p>
+        </div>
+    </div>
+
+    <script>
+        // Load images gallery on page load
+        async function loadImagesGallery() {
+            const imagesGallery = document.getElementById('imagesGallery');
+            const imagesLoading = document.getElementById('imagesLoading');
+            const imagesEmpty = document.getElementById('imagesEmpty');
+            
+            try {
+                imagesLoading.style.display = 'block';
+                imagesGallery.style.display = 'none';
+                imagesEmpty.style.display = 'none';
+                
+                const response = await fetch('/api/images');
+                const data = await response.json();
+                
+                imagesLoading.style.display = 'none';
+                
+                if (data.images && data.images.length > 0) {
+                    document.getElementById('imagesCountText').textContent = `${data.count} image${data.count !== 1 ? 's' : ''}`;
+                    
+                    // Clear previous images
+                    imagesGallery.innerHTML = '';
+                    
+                    // Display images in grid
+                    data.images.forEach((img, index) => {
+                        const imgCard = document.createElement('div');
+                        imgCard.className = 'image-card';
+                        
+                        // Create image element
+                        const imgElement = document.createElement('img');
+                        imgElement.src = `/api/media/${encodeURIComponent(img.path)}`;
+                        imgElement.alt = img.name;
+                        imgElement.onerror = function() {
+                            this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="250" height="200"><rect width="250" height="200" fill="%23ccc"/><text x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999">Image not found</text></svg>';
+                        };
+                        
+                        // Image name
+                        const imgName = document.createElement('div');
+                        imgName.className = 'image-name';
+                        imgName.textContent = img.name;
+                        
+                        imgCard.appendChild(imgElement);
+                        imgCard.appendChild(imgName);
+                        
+                        // Click to view full size
+                        imgCard.onclick = function() {
+                            window.open(`/api/media/${encodeURIComponent(img.path)}`, '_blank');
+                        };
+                        
+                        imagesGallery.appendChild(imgCard);
+                    });
+                    
+                    imagesGallery.style.display = 'grid';
+                } else {
+                    imagesEmpty.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading images:', error);
+                imagesLoading.style.display = 'none';
+                imagesEmpty.style.display = 'block';
+                imagesEmpty.innerHTML = '<i class="fas fa-exclamation-circle"></i><p>Error loading images. Please try again later.</p>';
+            }
+        }
+
+        // Detect images function
+        async function detectImages() {
+            const detectBtn = document.getElementById('detectBtn');
+            const originalText = detectBtn.innerHTML;
+            const imagesGallery = document.getElementById('imagesGallery');
+            const imagesLoading = document.getElementById('imagesLoading');
+            const imagesEmpty = document.getElementById('imagesEmpty');
+            
+            // Disable button and show loading state
+            detectBtn.disabled = true;
+            detectBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+            detectBtn.style.opacity = '0.7';
+            detectBtn.style.cursor = 'not-allowed';
+            
+            // Show loading overlay
+            imagesLoading.style.display = 'block';
+            imagesLoading.innerHTML = `
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Processing images... This may take a few minutes.</p>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                    Detecting faces and objects in images
+                </p>
+            `;
+            imagesGallery.style.display = 'none';
+            imagesEmpty.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/detect-images', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Detection failed');
+                }
+                
+                // Hide loading
+                imagesLoading.style.display = 'none';
+                
+                // Display results
+                if (data.results && data.results.length > 0) {
+                    displayDetectionResults(data);
+                } else {
+                    imagesEmpty.style.display = 'block';
+                    imagesEmpty.innerHTML = `
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>No images were processed. Please ensure images are available.</p>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Detection error:', error);
+                imagesLoading.style.display = 'none';
+                imagesEmpty.style.display = 'block';
+                imagesEmpty.innerHTML = `
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Detection failed: ${error.message}</p>
+                `;
+            } finally {
+                // Re-enable button
+                detectBtn.disabled = false;
+                detectBtn.innerHTML = originalText;
+                detectBtn.style.opacity = '1';
+                detectBtn.style.cursor = 'pointer';
+            }
+        }
+
+        // Display detection results
+        function displayDetectionResults(data) {
+            const imagesGallery = document.getElementById('imagesGallery');
+            imagesGallery.innerHTML = ''; // Clear existing
+            
+            // Summary card
+            const summaryCard = document.createElement('div');
+            summaryCard.style.cssText = `
+                grid-column: 1 / -1;
+                background: var(--card-bg);
+                border-radius: 12px;
+                padding: 1.5rem;
+                margin-bottom: 1rem;
+                border: 1px solid var(--result-border);
+            `;
+            
+            const totalFaces = data.results.reduce((sum, r) => sum + r.faces_detected, 0);
+            const totalObjects = data.results.reduce((sum, r) => sum + r.objects_detected, 0);
+            
+            summaryCard.innerHTML = `
+                <h3 style="margin-bottom: 1rem; color: var(--text-primary);">
+                    <i class="fas fa-chart-bar"></i> Detection Summary
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: var(--accent-color);">
+                            ${data.processed}
+                        </div>
+                        <div style="color: var(--text-secondary);">Images Processed</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #10b981;">
+                            ${totalFaces}
+                        </div>
+                        <div style="color: var(--text-secondary);">Faces Detected</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #f59e0b;">
+                            ${totalObjects}
+                        </div>
+                        <div style="color: var(--text-secondary);">Objects Detected</div>
+                    </div>
+                </div>
+            `;
+            imagesGallery.appendChild(summaryCard);
+            
+            // Processed images with detection results
+            data.results.forEach((result) => {
+                const imgCard = document.createElement('div');
+                imgCard.className = 'image-card';
+                imgCard.style.position = 'relative';
+                
+                // Image
+                const imgElement = document.createElement('img');
+                imgElement.src = `/api/media/${encodeURIComponent(result.image_path)}`;
+                imgElement.alt = result.image_name;
+                imgElement.onerror = function() {
+                    this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="250" height="200"><rect width="250" height="200" fill="%23ccc"/><text x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999">Image not found</text></svg>';
+                };
+                
+                // Detection badges
+                const badgesDiv = document.createElement('div');
+                badgesDiv.style.cssText = `
+                    position: absolute;
+                    top: 0.5rem;
+                    right: 0.5rem;
+                    display: flex;
+                    gap: 0.5rem;
+                    flex-wrap: wrap;
+                `;
+                
+                if (result.faces_detected > 0) {
+                    const faceBadge = document.createElement('span');
+                    faceBadge.style.cssText = `
+                        background: rgba(16, 185, 129, 0.9);
+                        color: white;
+                        padding: 0.25rem 0.5rem;
+                        border-radius: 6px;
+                        font-size: 0.75rem;
+                        font-weight: 600;
+                    `;
+                    faceBadge.innerHTML = `<i class="fas fa-user"></i> ${result.faces_detected}`;
+                    badgesDiv.appendChild(faceBadge);
+                }
+                
+                if (result.objects_detected > 0) {
+                    const objBadge = document.createElement('span');
+                    objBadge.style.cssText = `
+                        background: rgba(245, 158, 11, 0.9);
+                        color: white;
+                        padding: 0.25rem 0.5rem;
+                        border-radius: 6px;
+                        font-size: 0.75rem;
+                        font-weight: 600;
+                    `;
+                    objBadge.innerHTML = `<i class="fas fa-cube"></i> ${result.objects_detected}`;
+                    badgesDiv.appendChild(objBadge);
+                }
+                
+                // Image name
+                const imgName = document.createElement('div');
+                imgName.className = 'image-name';
+                imgName.textContent = result.image_name;
+                
+                // Detection details (collapsible)
+                const detailsDiv = document.createElement('div');
+                detailsDiv.style.cssText = `
+                    margin-top: 0.5rem;
+                    padding-top: 0.5rem;
+                    border-top: 1px solid var(--result-border);
+                    font-size: 0.85rem;
+                    color: var(--text-secondary);
+                `;
+                
+                let detailsHtml = '';
+                if (result.faces.length > 0) {
+                    detailsHtml += `<div style="margin-bottom: 0.5rem;"><strong>Faces:</strong> `;
+                    detailsHtml += result.faces.map((f, i) => 
+                        `Face ${i+1} (${(f.confidence * 100).toFixed(1)}%)`
+                    ).join(', ');
+                    detailsHtml += `</div>`;
+                }
+                
+                if (result.objects.length > 0) {
+                    detailsHtml += `<div><strong>Objects:</strong> `;
+                    detailsHtml += result.objects.map((o, i) => 
+                        `${o.type} (${(o.confidence * 100).toFixed(1)}%)`
+                    ).join(', ');
+                    detailsHtml += `</div>`;
+                }
+                
+                if (detailsHtml) {
+                    detailsDiv.innerHTML = detailsHtml;
+                }
+                
+                imgCard.appendChild(imgElement);
+                imgCard.appendChild(badgesDiv);
+                imgCard.appendChild(imgName);
+                if (detailsHtml) {
+                    imgCard.appendChild(detailsDiv);
+                }
+                
+                // Click to view full size
+                imgCard.onclick = function() {
+                    window.open(`/api/media/${encodeURIComponent(result.image_path)}`, '_blank');
+                };
+                
+                imagesGallery.appendChild(imgCard);
+            });
+            
+            imagesGallery.style.display = 'grid';
+            
+            // Show success notification
+            if (data.processed > 0) {
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 80px;
+                    right: 20px;
+                    background: var(--card-bg);
+                    border: 1px solid var(--accent-color);
+                    border-radius: 8px;
+                    padding: 1rem 1.5rem;
+                    box-shadow: var(--shadow);
+                    z-index: 10000;
+                    animation: slideIn 0.3s ease;
+                `;
+                notification.innerHTML = `
+                    <i class="fas fa-check-circle" style="color: #10b981; margin-right: 0.5rem;"></i>
+                    Successfully processed ${data.processed} image${data.processed !== 1 ? 's' : ''}!
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+        }
+
+        // Initialize theme from localStorage (sync with main dashboard)
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            loadImagesGallery();
+        });
+    </script>
+</body>
+</html>
